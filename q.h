@@ -21,3 +21,4 @@ void                close_queue     (struct my_queue * q);
 void                send_message    (struct my_queue * q, const char * msg);
 const char *        retr_message    (struct my_queue * q);
 void                update_status   (struct my_queue * q);
+void                remove_queue    (const char * name);

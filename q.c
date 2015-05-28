@@ -3,10 +3,12 @@
 struct my_queue* open_queue(const char * name)
 {
 	struct my_queue * q = malloc(sizeof(struct my_queue));
+	if(q == NULL) { handle_error("malloc"); }
 	//
 	q->name = name;
 	//
 	q->attr = malloc(sizeof(struct mq_attr));
+	if(q->attr == NULL) { handle_error("malloc"); }
 	q->attr->mq_flags = 0;
 	q->attr->mq_curmsgs = 0;
 	q->attr->mq_msgsize = MAX_MSG_SIZE;
@@ -15,6 +17,7 @@ struct my_queue* open_queue(const char * name)
 	q->q = mq_open(name, (O_RDWR | O_CREAT), S_IRWXU, q->attr);
 	//
 	q->buf = malloc(MAX_MSG_SIZE);
+	if(q->buf == NULL) { handle_error("malloc"); }
 	//
 	if (q->q == -1) { handle_error("mq_open"); }
 	return q;
@@ -23,6 +26,9 @@ struct my_queue* open_queue(const char * name)
 void close_queue(struct my_queue * q)
 {
 	if(mq_close(q->q) == -1) { handle_error("mq_close"); }
+	free(q->buf);
+	free(q->attr);
+	free(q);
 }
 
 void send_message(struct my_queue* q, const char * msg)
@@ -45,4 +51,9 @@ const char * retr_message(struct my_queue * q)
 void update_status(struct my_queue * q)
 {
 	if(mq_getattr(q->q, q->attr) == -1) { handle_error("mq_getattr"); }
+}
+
+void remove_queue(const char * name)
+{
+	if(mq_unlink(name) == -1) { handle_error("mq_unlink"); }
 }
