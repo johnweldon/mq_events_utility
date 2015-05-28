@@ -16,7 +16,7 @@ struct my_queue* open_queue(const char * name, unsigned int max_msg_size, unsign
 	//
 	q->q = mq_open(name, (O_RDWR | O_CREAT), S_IRWXU, q->attr);
 	//
-	q->buf = malloc(q->attr->mq.msgsize + 1);
+	q->buf = malloc(q->attr->mq_msgsize + 1);
 	if(q->buf == NULL) { handle_error("malloc"); }
 	//
 	if (q->q == -1) { handle_error("mq_open"); }
