@@ -1,6 +1,6 @@
 #include "q.h"
 
-struct my_queue* open_queue(const char * name)
+struct my_queue* open_queue(const char * name, unsigned int max_msg_size, unsigned int max_msg_qlen)
 {
 	struct my_queue * q = malloc(sizeof(struct my_queue));
 	if(q == NULL) { handle_error("malloc"); }
@@ -9,14 +9,14 @@ struct my_queue* open_queue(const char * name)
 	//
 	q->attr = malloc(sizeof(struct mq_attr));
 	if(q->attr == NULL) { handle_error("malloc"); }
-	q->attr->mq_flags = 0;
+	q->attr->mq_flags   = 0;
 	q->attr->mq_curmsgs = 0;
-	q->attr->mq_msgsize = MAX_MSG_SIZE;
-	q->attr->mq_maxmsg = MAX_MSG_QLEN;
+	q->attr->mq_msgsize = max_msg_size == 0 || max_msg_size > MAX_MSG_SIZE ? MAX_MSG_SIZE : max_msg_size;
+	q->attr->mq_maxmsg  = max_msg_qlen == 0 || max_msg_qlen > MAX_MSG_QLEN ? MAX_MSG_QLEN : max_msg_qlen;
 	//
 	q->q = mq_open(name, (O_RDWR | O_CREAT), S_IRWXU, q->attr);
 	//
-	q->buf = malloc(MAX_MSG_SIZE);
+	q->buf = malloc(q->attr->mq.msgsize + 1);
 	if(q->buf == NULL) { handle_error("malloc"); }
 	//
 	if (q->q == -1) { handle_error("mq_open"); }
@@ -33,14 +33,14 @@ void close_queue(struct my_queue * q)
 
 void send_message(struct my_queue* q, const char * msg)
 {
-	if(mq_send(q->q, msg, strnlen(msg, MAX_MSG_QLEN), 0) == -1) { handle_error("mq_send"); }
+	if(mq_send(q->q, msg, strnlen(msg, q->attr->mq_msgsize), 0) == -1) { handle_error("mq_send"); }
 }
 
 const char * retr_message(struct my_queue * q)
 {
 	update_status(q);
 	if(q->attr->mq_curmsgs > 0) {
-		mq_receive(q->q, q->buf, MAX_MSG_SIZE, NULL);
+		mq_receive(q->q, q->buf, q->attr->mq_msgsize, NULL);
 		update_status(q);
 	} else {
 		q->buf[0] = 0;

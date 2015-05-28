@@ -16,7 +16,7 @@ struct my_queue {
 	mqd_t q;
 };
 
-struct my_queue *   open_queue      (const char * name);
+struct my_queue *   open_queue      (const char * name, unsigned int max_msg_size, unsigned int max_msg_qlen);
 void                close_queue     (struct my_queue * q);
 void                send_message    (struct my_queue * q, const char * msg);
 const char *        retr_message    (struct my_queue * q);
