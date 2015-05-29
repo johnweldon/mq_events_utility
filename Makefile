@@ -1,9 +1,9 @@
 CC=gcc
 TARGET=f
 
-HEADERS=f.h q.h
-SOURCES=f.c q.c
-OBJECTS=f.o q.o
+HEADERS=f.h q.h ip.h
+SOURCES=f.c q.c ip.c
+OBJECTS=f.o q.o ip.o
 
 LDFLAGS=-lrt
 

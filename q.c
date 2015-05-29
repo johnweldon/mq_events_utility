@@ -34,17 +34,15 @@ void close_queue(struct my_queue * q)
 void send_message(struct my_queue* q, const char * msg)
 {
 	if(mq_send(q->q, msg, strnlen(msg, q->attr->mq_msgsize), 0) == -1) { handle_error("mq_send"); }
+	update_status(q);
 }
 
 const char * retr_message(struct my_queue * q)
 {
+	size_t received = mq_receive(q->q, q->buf, q->attr->mq_msgsize, NULL);
+	if(received == -1) { handle_error("mq_receive"); }
+	q->buf[received] = '\0';
 	update_status(q);
-	if(q->attr->mq_curmsgs > 0) {
-		mq_receive(q->q, q->buf, q->attr->mq_msgsize, NULL);
-		update_status(q);
-	} else {
-		q->buf[0] = 0;
-	}
 	return q->buf;
 }
 
